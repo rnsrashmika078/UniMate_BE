@@ -227,7 +227,6 @@ export const addPost = async (req, res) => {
       error: error.message,
     });
   }
-  console.log("user register route");
 };
 
 export const getPost = async (req, res) => {
