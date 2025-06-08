@@ -13,6 +13,8 @@ import {
   userUpdate,
   getImages,
   deletePost,
+  deleteAllFriendRequests,
+  getAllRequests,
 } from "./controller.js";
 const router = express.Router();
 
@@ -30,5 +32,7 @@ router.get("/getImage/:username", getImages);
 router.get("/getPost/:username", getPost);
 router.post("/storeFriendRequests", storeFriendRequests);
 router.get("/getFriendRequests/:To", getFriendRequests);
+router.delete("/deleteAllRequests", deleteAllFriendRequests);
+router.get("/getAllRequests", getAllRequests);
 
 export default router;

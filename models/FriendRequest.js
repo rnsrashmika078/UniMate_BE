@@ -2,8 +2,11 @@ import mongoose from "mongoose";
 
 const friendRequestSchema = new mongoose.Schema(
     {
-        To: { type: String, required: true },
-        From: { type: String, required: true },
+        to: { type: String, required: true },
+        from: { type: String, required: true },
+        fullname: { type: String, required: true },
+        // messageType: { type: String, required: true },
+
     },
     { timestamps: true }
 );

@@ -163,11 +163,12 @@ export const getUser = async (req, res) => {
 };
 
 export const storeFriendRequests = async (req, res) => {
-  const { To, From } = req.body;
+  const { to, from, fullname } = req.body;
   try {
     const newFriendRequest = new FriendRequest({
-      To,
-      From,
+      to,
+      from,
+      fullname,
     });
     await newFriendRequest.save();
     res.json({ message: "Added New Request" });
@@ -190,6 +191,33 @@ export const getFriendRequests = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       message: "Cannot Get Requests at the movement!",
+      error,
+    });
+  }
+};
+export const getAllRequests = async (req, res) => {
+  try {
+    const requests = await FriendRequest.find();
+    return res.status(200).json({
+      requests,
+      message: "Succesfully get the all the requests!",
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Cannot Get All the Requests at the movement!",
+      error,
+    });
+  }
+};
+export const deleteAllFriendRequests = async (req, res) => {
+  try {
+    const requests = await FriendRequest.deleteMany();
+    return res.json({
+      message: "All FriendRequests are deleted succesfully!",
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "cannot delete all friend requests at the movement!",
       error,
     });
   }
