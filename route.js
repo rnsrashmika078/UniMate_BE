@@ -1,17 +1,18 @@
 import express from "express";
 import {
-    userLogin,
-    userSignUp,
-    getAllUsers,
-    getUser,
-    storeFriendRequests,
-    getFriendRequests,
-    addPost,
-    getPost,
-    getAllPosts,
-    deleteData,
-    userUpdate,
-    getImages,
+  userLogin,
+  userSignUp,
+  getAllUsers,
+  getUser,
+  storeFriendRequests,
+  getFriendRequests,
+  addPost,
+  getPost,
+  getAllPosts,
+  deleteData,
+  userUpdate,
+  getImages,
+  deletePost,
 } from "./controller.js";
 const router = express.Router();
 
@@ -22,7 +23,8 @@ router.get("/allUsers", getAllUsers);
 router.get("/getUser/:username", getUser);
 router.post("/addPost", addPost);
 router.get("/getAllPosts", getAllPosts);
-router.delete("/deleteposts", deleteData);
+router.delete("/deletePosts", deleteData);
+router.delete("/deletePost/:_id", deletePost);
 router.put("/userUpdate", userUpdate);
 router.get("/getImage/:username", getImages);
 router.get("/getPost/:username", getPost);
