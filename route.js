@@ -15,6 +15,8 @@ import {
   deletePost,
   deleteAllFriendRequests,
   getAllRequests,
+  updateRequestStatus,
+  updateLastSeen,
 } from "./controller.js";
 const router = express.Router();
 
@@ -31,8 +33,9 @@ router.put("/userUpdate", userUpdate);
 router.get("/getImage/:username", getImages);
 router.get("/getPost/:username", getPost);
 router.post("/storeFriendRequests", storeFriendRequests);
-router.get("/getFriendRequests/:To", getFriendRequests);
+router.get("/getFriendRequests/:to", getFriendRequests);
 router.delete("/deleteAllRequests", deleteAllFriendRequests);
 router.get("/getAllRequests", getAllRequests);
-
+router.put("/updateRequestStatus/:_id", updateRequestStatus);
+router.put("/updateLastSeen/:_id", updateLastSeen);
 export default router;

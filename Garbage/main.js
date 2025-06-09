@@ -1,5 +1,5 @@
 import express, { Router } from "express";
-import router from "./route.js";
+import router from "../route.js";
 import { connectDb } from "./config/db.js";
 import cors from 'cors'
 

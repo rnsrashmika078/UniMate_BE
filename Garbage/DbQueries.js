@@ -1,8 +1,8 @@
 import express from "express";
 import express from "express";
-import { connectDb } from "./config/dbMongo.js";
-import { connectDb } from "./config/dbMongo.js";
-import { Person } from "./models/Person.js";
+import { connectDb } from "../config/dbMongo.js";
+import { connectDb } from "../config/dbMongo.js";
+import { Person } from "../models/Person.js";
 
 const app = express();
 const PORT = 3000;

@@ -162,13 +162,26 @@ export const getUser = async (req, res) => {
   console.log("Get specific users route");
 };
 
+// related to the friend requests
 export const storeFriendRequests = async (req, res) => {
-  const { to, from, fullname } = req.body;
+  const { to, from, senderfname, recieverfname, status } = req.body;
   try {
+    const existing = await FriendRequest.findOne({
+      $or: [
+        { from, to },
+        { from: to, to: from },
+      ],
+    });
+
+    if (existing) {
+      return res.status(200).json({ message: "Request already exists" });
+    }
     const newFriendRequest = new FriendRequest({
       to,
       from,
-      fullname,
+      senderfname,
+      recieverfname,
+      status,
     });
     await newFriendRequest.save();
     res.json({ message: "Added New Request" });
@@ -179,12 +192,51 @@ export const storeFriendRequests = async (req, res) => {
     });
   }
 };
+// Update the status of the request
+export const updateRequestStatus = async (req, res) => {
+  const _id = req.params._id;
+  const { status } = req.body;
+
+  console.log(status);
+  try {
+    const updated = await FriendRequest.findByIdAndUpdate(
+      _id,
+      { status },
+      { new: true }
+    );
+
+    return res.json({ message: "Request Updated!", updated });
+  } catch (err) {
+    return res.status(500).json({ error: "Update failed" });
+  }
+};
+export const updateLastSeen = async (req, res) => {
+  const _id = req.params._id;
+  const { lastseen } = req.body;
+
+  try {
+    const updated = await FriendRequest.findByIdAndUpdate(
+      _id,
+      { lastseen },
+      { new: true, select: "lastseen" } // This line doesn't work with findByIdAndUpdate directly
+    );
+
+    return res.json({
+      message: "Last Seen Updated!",
+      updated: updated.lastseen,
+    });
+  } catch (err) {
+    return res.status(500).json({ error: "Update failed" });
+  }
+};
 
 export const getFriendRequests = async (req, res) => {
-  const To = req.params.To;
-  console.log(To);
+  const to = req.params.to;
+
   try {
-    const requests = await FriendRequest.find({ To });
+    const requests = await FriendRequest.find({
+      $or: [{ from: to }, { to: to }],
+    });
     res.status(200).json({
       requests,
     });
@@ -222,6 +274,8 @@ export const deleteAllFriendRequests = async (req, res) => {
     });
   }
 };
+
+// Realted to get Images ( profiles Display Picture )
 export const getImages = async (req, res) => {
   try {
     const username = req.params.username;
@@ -242,6 +296,7 @@ export const getImages = async (req, res) => {
   }
 };
 
+// Related to Posts
 export const addPost = async (req, res) => {
   try {
     const body = req.body;
