@@ -17,6 +17,10 @@ import {
   getAllRequests,
   updateRequestStatus,
   updateLastSeen,
+  addLike,
+  getAllLikes,
+  deleteAllLikes,
+  getLikes,
 } from "./controller.js";
 const router = express.Router();
 
@@ -38,4 +42,10 @@ router.delete("/deleteAllRequests", deleteAllFriendRequests);
 router.get("/getAllRequests", getAllRequests);
 router.put("/updateRequestStatus/:_id", updateRequestStatus);
 router.put("/updateLastSeen/:_id", updateLastSeen);
+getAllLikes;
+// Likes
+router.post("/addLikes", addLike);
+router.get("/getAllLikes", getAllLikes);
+router.get("/getLikes/:postId", getLikes);
+router.delete("/deleteAllLikes", deleteAllLikes);
 export default router;

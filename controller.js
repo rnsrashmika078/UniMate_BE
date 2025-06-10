@@ -7,6 +7,7 @@ import { FriendRequest } from "./models/FriendRequest.js";
 import cookieParser from "cookie-parser";
 import { Posts } from "./models/Posts.js";
 import { v2 as cloudinary } from "cloudinary";
+import { PostsLikes } from "./models/PostsLikes.js";
 
 const app = express();
 const PORT = 5000;
@@ -375,6 +376,66 @@ export const deletePost = async (req, res) => {
       });
     }
     return res.json({ message: "Post Deleted Succesfully", del });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+// Related to the posts likes
+export const addLike = async (req, res) => {
+  try {
+    const data = req.body;
+    console.log(data);
+    const existing = await PostsLikes.findOne({
+      username: data.username,
+      postId: data.postId,
+    });
+    if (existing) {
+      await PostsLikes.deleteOne({ _id: existing._id });
+      console.log("LIKED REMOVE");
+      return res.status(200).json({ message: "Like removed!" });
+    }
+    const like = new PostsLikes(data);
+    await like.save();
+    console.log("LIKED ADDED");
+    return res.status(200).json({ message: "Liked Added!", like });
+  } catch (error) {
+    console.log(error);
+  }
+};
+export const getAllLikes = async (req, res) => {
+  try {
+    // const postId = req.params.postId;ෆෆ
+    const likes = await PostsLikes.find();
+    if (!likes) {
+      return res
+        .status(404)
+        .json({ message: "No Likes for that posts or post not found" });
+    }
+    return res.status(200).json({ message: "GET ALL LIKES TO POSTS", likes });
+  } catch (error) {
+    console.log(error);
+  }
+};
+export const getLikes = async (req, res) => {
+  try {
+    const postId = req.params.postId;
+    const likes = await PostsLikes.find({ postId });
+    if (!likes) {
+      return res
+        .status(404)
+        .json({ message: "No Likes for that posts or post not found" });
+    }
+    return res.status(200).json({ message: "GET ALL LIKES TO POSTS", likes });
+  } catch (error) {
+    console.log(error);
+  }
+};
+export const deleteAllLikes = async (req, res) => {
+  try {
+    const likes = await PostsLikes.deleteMany();
+
+    return res.status(200).json({ message: "Delete all likes" });
   } catch (error) {
     console.log(error);
   }
