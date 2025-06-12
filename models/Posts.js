@@ -10,8 +10,8 @@ const postsSchema = new mongoose.Schema(
     image: { type: String, required: false },
     time: { type: String, required: false },
     username: { type: String, required: true },
+    commentCount: { type: Number, required: false },
   },
   { timestamps: true }
 );
-
 export const Posts = mongoose.model("Posts", postsSchema);
