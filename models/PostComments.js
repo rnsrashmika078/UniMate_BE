@@ -4,20 +4,15 @@ const postscommentsSchema = new mongoose.Schema(
   {
     postId: { type: String, required: true },
     fullname: { type: String, required: true },
+    username: { type: String, required: true },
     profileImage: { type: String, required: false },
-    comment: { type: Boolean, required: true },
-    reply: [
-      {
-        userId: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "PostComments",
-          required: true,
-        },
-        fullname: { type: String, required: true },
-        profileImage: { type: String, required: false },
-        reply: { type: Boolean, required: true },
-      },
-    ],
+    comment: { type: String, required: true },
+    reply:[{
+      fullname: { type: String, required: true },
+      username: { type: String, required: true },
+      profileImage: { type: String, required: false },
+      reply: { type: String, required: true },
+    }]
   },
   { timestamps: true }
 );

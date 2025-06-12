@@ -8,6 +8,7 @@ import cookieParser from "cookie-parser";
 import { Posts } from "./models/Posts.js";
 import { v2 as cloudinary } from "cloudinary";
 import { PostsLikes } from "./models/PostsLikes.js";
+import { PostsComments } from "./models/PostComments.js";
 
 const app = express();
 const PORT = 5000;
@@ -39,31 +40,31 @@ export const userLogin = async (req, res) => {
   if (!user && !token) {
     return res.status(500).json({ message: "user not found" });
   }
-  if (user && token) {
-    const {
-      _id,
-      username,
-      firstname,
-      lastname,
-      email,
-      profileImage,
-      coverImage,
-    } = user;
-    const Person = {
-      _id,
-      username,
-      firstname,
-      lastname,
-      email,
-      profileImage,
-      coverImage,
-      token,
-    };
-    res.status(200).json({
-      Person,
-      message: "Login Successfully",
-    });
-  }
+  // if (user && token) {
+  //   const {
+  //     _id,
+  //     username,
+  //     firstname,
+  //     lastname,
+  //     email,
+  //     profileImage,
+  //     coverImage,
+  //   } = user;
+  //   const Person = {
+  //     _id,
+  //     username,
+  //     firstname,
+  //     lastname,
+  //     email,
+  //     profileImage,
+  //     coverImage,
+  //     token,
+  //   };
+  res.status(200).json({
+    token,
+    message: "Login Successfully",
+  });
+  // }
   console.log("user login route");
 };
 export const userSignUp = async (req, res) => {
@@ -144,7 +145,6 @@ export const getAllUsers = async (req, res) => {
 };
 export const getUser = async (req, res) => {
   const username = req.params.username;
-  console.log(username);
   try {
     const user = await Person.findOne({ username }).select(
       "-password -confirm -createdAt -updatedAt -__v"
@@ -153,7 +153,6 @@ export const getUser = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-
     return res.status(200).json({
       user,
     });
@@ -161,6 +160,28 @@ export const getUser = async (req, res) => {
     res.status(500).json({ message: "Failed to get all users!", error });
   }
   console.log("Get specific users route");
+};
+export const GetUserByToken = async (req, res) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+  const token = authHeader.split(" ")[1];
+  try {
+    const decoded = jwt.verify(token, secret);
+    console.log("DECORRED DATA", decoded);
+    const user = await Person.findOne({ username: decoded.username }).select(
+      "-password -confirm -createdAt -updatedAt -__v"
+    );
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    return res.status(200).json({ user });
+  } catch (error) {
+    return res.status(401).json({ message: "Invalid or expired token", error });
+  }
 };
 
 // related to the friend requests
@@ -330,12 +351,43 @@ export const getPost = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+// export const getAllPosts = async (req, res) => {
+//   const friends = await FriendRequest.find({ from: "rnsrashmika078" });
+//   const fromUsernames = friends.map((f) => f.to);
+//   console.log("GET ALL FRIEND", friends);
+//   try {
+//     const allPosts = await Posts.find({
+//       // username: { $in: [fromUsernames] },
+//       username: fromUsernames,
+//     });
+//     if (allPosts.length === 0) {
+//       return res.status(404).json({ message: "No posts found!" });
+//     }
+//     return res
+//       .status(200)
+//       .json({ message: "Posts fetched successfully", allPosts });
+//   } catch (error) {
+//     console.error("Server error:", error);
+//     res.status(500).json({ message: "Server error" });
+//   }
+// };
 export const getAllPosts = async (req, res) => {
   try {
-    const allPosts = await Posts.find();
+    const username = req.params.username;
+    const friends = await FriendRequest.find({
+      $or: [{ to: username }, { from: username }],
+      status: "Accepted",
+    });
+    const friendUsernames = friends.map((fr) =>
+      fr.from === username ? fr.to : fr.from
+    );
+    friendUsernames.push(username);
+    const allPosts = await Posts.find({ username: { $in: friendUsernames } });
+
     if (allPosts.length === 0) {
       return res.status(404).json({ message: "No posts found!" });
     }
+
     return res
       .status(200)
       .json({ message: "Posts fetched successfully", allPosts });
@@ -344,6 +396,7 @@ export const getAllPosts = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
 export const deleteData = async (req, res) => {
   try {
     const del = await Posts.deleteMany();
@@ -362,20 +415,28 @@ export const deletePost = async (req, res) => {
   try {
     const _id = req.params._id;
     const post = await Posts.findById(_id);
-    if (!post) {
+    const likes = await PostsLikes.find({ productId: _id });
+    const comment = await PostsComments.find({ postId: _id });
+
+    if (!post && !likes) {
       return res.status(404).json({ message: "Post not found" });
     }
     if (post.image_public_id) {
       await cloudinary.uploader.destroy(post.image_public_id);
     }
-    const del = await Posts.deleteOne({ _id });
+    const likeDelete = await Posts.deleteOne({ productId: _id });
+    const postDelete = await Posts.deleteOne({ _id });
 
-    if (!del) {
+    if (comment) {
+      const deleteComments = await PostsComments.deleteOne({ postId: _id });
+    }
+
+    if (!likeDelete && !postDelete) {
       return res.json({
         message: "error while try to delete the post from the posts schema",
       });
     }
-    return res.json({ message: "Post Deleted Succesfully", del });
+    return res.json({ message: "Post Deleted Succesfully" });
   } catch (error) {
     console.log(error);
   }
@@ -392,12 +453,10 @@ export const addLike = async (req, res) => {
     });
     if (existing) {
       await PostsLikes.deleteOne({ _id: existing._id });
-      console.log("LIKED REMOVE");
       return res.status(200).json({ message: "Like removed!" });
     }
     const like = new PostsLikes(data);
     await like.save();
-    console.log("LIKED ADDED");
     return res.status(200).json({ message: "Liked Added!", like });
   } catch (error) {
     console.log(error);
@@ -405,7 +464,6 @@ export const addLike = async (req, res) => {
 };
 export const getAllLikes = async (req, res) => {
   try {
-    // const postId = req.params.postId;ෆෆ
     const likes = await PostsLikes.find();
     if (!likes) {
       return res
